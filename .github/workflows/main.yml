@@ -6,24 +6,14 @@ on:
     branches:
       - main
 
-# We do NOT need id-token permissions for a classic SP + secret approach.
-# So no 'permissions:' block is required here.
-
+# No 'permissions:' block needed for old-style SP + secret
 jobs:
   terraform:
     runs-on: ubuntu-latest
-
     env:
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      TF_VERSION: '1.6.0' # Or whichever Terraform version you need
-
+      TF_VERSION: '1.6.0'  # Or whichever version you want
+    
     steps:
-      - name: Pre Azure CLI Login
-        run: echo "About to authenticate with Azure using SP + Client Secret."
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -32,16 +22,15 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      # -- Azure CLI Login with Service Principal + Client Secret --
+      # --------------------------------------
+      # Azure CLI Login using the JSON 'creds'
+      # --------------------------------------
       - name: Azure CLI Login
         uses: azure/login@v1
         with:
-          auth-type: spn
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          allow-no-subscriptions: true
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        # optionally, you can add:
+        # allow-no-subscriptions: true
 
       - name: Terraform Init
         run: terraform init
