@@ -1,0 +1,50 @@
+# Trigger the pipeline whenever changes are pushed to the 'main' branch
+trigger:
+- main
+
+# Define the type of agent (virtual machine) to run the pipeline
+pool:
+  vmImage: 'ubuntu-latest' # Use an Ubuntu-based virtual machine for execution
+
+# Define pipeline-wide variables
+variables:
+  terraformVersion: '1.6.0'          # Specify the Terraform version to be installed
+  azureSubscription: '<Your-Azure-Service-Connection-Name>' # Azure Service Connection for authentication
+
+# Step 1: Install Terraform on the agent
+- task: UseTerraform@0
+  displayName: 'Install Terraform'
+  inputs:
+    terraformVersion: $(terraformVersion) # Install the specified Terraform version
+
+# Step 2: Initialize Terraform
+- task: TerraformCLI@0
+  displayName: 'Terraform Init'
+  inputs:
+    command: 'init' # Download required Terraform providers and initialize the backend
+
+# Step 3: Preview Infrastructure Changes
+- task: TerraformCLI@0
+  displayName: 'Terraform Plan'
+  inputs:
+    command: 'plan' # Preview infrastructure changes without applying them
+    environmentServiceName: $(azureSubscription) # Authenticate with Azure using the Service Connection
+
+# Step 4: Apply Infrastructure Changes
+- task: TerraformCLI@0
+  displayName: 'Terraform Apply'
+  inputs:
+    command: 'apply' # Apply the planned changes to provision resources
+    additionalArgs: '-auto-approve' # Skip manual approval for deployment
+    environmentServiceName: $(azureSubscription)
+
+# Step 5: Manual Monitoring Check using Azure CLI
+- task: AzureCLI@2
+  displayName: 'Manual Monitoring Check'
+  inputs:
+    azureSubscription: $(azureSubscription) # Authenticate with Azure using the Service Connection
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az monitor metrics list --resource /subscriptions/<subscription-id>/resourceGroups/monitoring-rg --metric "Percentage CPU"
+      # Fetch and display CPU usage metrics for the deployed Virtual Machine
