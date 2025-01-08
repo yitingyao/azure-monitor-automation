@@ -1,5 +1,5 @@
 
-# Azure Monitoring Automation
+# Azure Cloud Monitoring & Alerting Automation
 
 ## Overview
 This project automates the deployment of an Azure cloud monitoring system using **Terraform** and **Azure DevOps CI/CD pipelines**. It provisions essential Azure resources, including a Virtual Machine, Log Analytics Workspace, and CPU Usage Alerts, enabling real-time monitoring, alerting, and streamlined infrastructure management.
