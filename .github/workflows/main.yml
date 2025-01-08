@@ -6,6 +6,11 @@ on:
     branches:
       - main
 
+# **Add the permissions block below so that the Azure Login step can use OIDC**
+permissions:
+  contents: read
+  id-token: write
+
 # Define the type of runner (virtual machine) to run the pipeline
 jobs:
   terraform:
@@ -29,7 +34,7 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      # Step 3: Azure CLI Login (Service Principal Authentication)
+      # Step 3: Azure CLI Login (OIDC or Service Principal Authentication)
       - name: Azure CLI Login
         uses: azure/login@v1
         with:
@@ -54,9 +59,9 @@ jobs:
       - name: Manual Monitoring Check
         run: |
           az monitor metrics list \
-          --resource /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/monitoring-rg \
-          --metric "Percentage CPU" \
-          --output table
+            --resource /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/monitoring-rg \
+            --metric "Percentage CPU" \
+            --output table
 
       # Step 8: Optional Manual Cleanup (Terraform Destroy)
       - name: Terraform Destroy (Manual Cleanup)
