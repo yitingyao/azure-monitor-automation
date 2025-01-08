@@ -47,7 +47,3 @@ jobs:
             --resource "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/monitoring-rg/providers/Microsoft.Compute/virtualMachines/test-vm" \
             --metric "Percentage CPU" \
             --output table
-
-      - name: Terraform Destroy (Manual Cleanup)
-        if: github.ref == 'refs/heads/main' && success()
-        run: terraform destroy -auto-approve
