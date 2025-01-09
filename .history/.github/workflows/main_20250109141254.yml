@@ -1,0 +1,50 @@
+# Trigger the pipeline whenever changes are pushed to the 'main' branch and only if Terraform files are modified
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.tf'         # Only trigger if any .tf file is changed
+      - '**/*.tfvars'     # Optional: Include variable files if used
+      - '**/terraform.*'  # Optional: Include terraform-related config files
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      TF_VERSION: '1.6.0'  # Or whichever version you want
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+ 
+      - name: Azure CLI Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        # allow-no-subscriptions: true  # optional
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      # Hard-code the VM resource ID based on your Terraform config
+      - name: Manual Monitoring Check
+        run: |
+          az monitor metrics list \
+            --resource "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/monitoring-rg/providers/Microsoft.Compute/virtualMachines/test-vm" \
+            --metric "Percentage CPU" \
+            --output table

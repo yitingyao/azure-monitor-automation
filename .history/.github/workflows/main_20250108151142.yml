@@ -1,0 +1,64 @@
+# Trigger the pipeline whenever changes are pushed to the 'main' branch
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+# Define the type of runner (virtual machine) to run the pipeline
+jobs:
+  terraform:
+    runs-on: ubuntu-latest # Use an Ubuntu-based virtual machine for execution
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      TF_VERSION: '1.6.0' # Specify the Terraform version to be installed
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Terraform
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # Step 3: Azure CLI Login (Service Principal Authentication)
+      - name: Azure CLI Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          allow-no-subscriptions: true
+
+      # Step 4: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Step 5: Preview Infrastructure Changes
+      - name: Terraform Plan
+        run: terraform plan
+
+      # Step 6: Apply Infrastructure Changes
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      # Step 7: Manual Monitoring Check using Azure CLI
+      - name: Manual Monitoring Check
+        run: |
+          az monitor metrics list \
+          --resource /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/monitoring-rg \
+          --metric "Percentage CPU" \
+          --output table
+
+      # Step 8: Optional Manual Cleanup (Terraform Destroy)
+      - name: Terraform Destroy (Manual Cleanup)
+        if: github.ref == 'refs/heads/main' && success()
+        run: terraform destroy -auto-approve
