@@ -1,15 +1,14 @@
-
 # Azure Cloud Monitoring & Alerting Automation
 
 ## Overview
-This project automates the deployment of an Azure cloud monitoring system using **Terraform** and **Azure DevOps CI/CD pipelines**. It provisions essential Azure resources, including a Virtual Machine, Log Analytics Workspace, and CPU Usage Alerts, enabling real-time monitoring, alerting, and streamlined infrastructure management.
+This project automates the deployment of an Azure cloud monitoring system using **Terraform** and **GitHub Actions CI/CD pipelines**. It provisions essential Azure resources, including a Virtual Machine, Log Analytics Workspace, and CPU Usage Alerts, enabling real-time monitoring, alerting, and streamlined infrastructure management.
 
 ---
 
 ## Technical Features
 - **Infrastructure as Code (IaC):** Automates resource provisioning with Terraform scripts.
 - **Azure Monitoring & Log Analytics:** Centralized workspace to collect and analyze resource performance metrics.
-- **CI/CD Integration:** Automates deployment, validation, and updates through Azure DevOps pipelines.
+- **CI/CD Integration:** Automates deployment, validation, and updates through GitHub Actions pipelines.
 - **High Availability:** Resources are monitored for performance and uptime.
 - **Scalable & Modular Design:** Easily extendable to include more Azure resources or services.
 
@@ -26,7 +25,7 @@ This project automates the deployment of an Azure cloud monitoring system using 
 ## Prerequisites
 - **Azure CLI:** Ensure it’s installed and authenticated (`az login`).
 - **Terraform:** Ensure it's installed and verify installation with `terraform -v`.
-- **Azure DevOps:** Set up for CI/CD integration.
+- **GitHub Repository:** Set up for CI/CD integration.
 
 ---
 
@@ -76,8 +75,8 @@ Outputs include:
 
 ---
 
-## 🔄 **CI/CD Pipeline (Azure DevOps)**
-- **Pipeline File:** `azure-pipelines.yml`
+## 🔄 **CI/CD Pipeline (GitHub Actions)**
+- **Pipeline File:** `.github/workflows/main.yml`
 - **How It Works:**
   1. Push changes to the `main` branch:
      ```powershell
@@ -85,13 +84,14 @@ Outputs include:
      git commit -m "Updated Terraform infrastructure"
      git push origin main
      ```
-  2. **Azure DevOps Pipeline** triggers automatically:
+  2. **GitHub Actions Pipeline** triggers automatically:
+     - Checks for changes in `.tf` files before triggering the pipeline.
      - Validates Terraform code.
      - Plans infrastructure changes.
-     - Applies changes to Azure.
-  3. Monitor pipeline runs in **Azure DevOps > Pipelines > Runs**.
+     - Applies changes to Azure resources.
+  3. Monitor pipeline runs in **GitHub Repository > Actions**.
 
-**What it does:** Automates infrastructure deployment and ensures consistent configurations with every code update.
+**What it does:** Automates infrastructure deployment using Terraform, ensuring consistent and reliable configurations with every code update.
 
 ---
 
@@ -102,8 +102,6 @@ Outputs include:
   - Data from the virtual machine is sent to the Log Analytics Workspace.
   - Performance metrics such as CPU usage are logged.
   - Alerts (e.g., high CPU usage) are triggered based on predefined conditions.
-
-
 
 ---
 
@@ -130,3 +128,4 @@ az monitor metrics list --resource /subscriptions/<subscription-id>/resourceGrou
 ---
 
 This project demonstrates a streamlined, automated Azure infrastructure setup with robust monitoring and CI/CD integration, offering a solid foundation for scalable and manageable cloud deployments.
+
